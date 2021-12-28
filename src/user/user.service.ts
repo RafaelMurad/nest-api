@@ -1,26 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { ResultDto } from 'src/dto/result.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+export class UserService{
+ constructor(@InjectRepository(User) private readonly repository: Repository<User>) { }
+
+ async create(createUserDto: CreateUserDto): Promise<ResultDto> {
+
+  let user = new User();
+  user.name = createUserDto.name;
+  user.email = createUserDto.email;
+  user.password = bcrypt.hashSync(createUserDto.password, 8);
+  try {
+     const result = await this.repository.save(user);
+     return {
+       status: true,
+       message: 'User created',
+     };
+   } catch (error) {
+     return {
+       status: false,
+       message: error.message,
+     };
+   }
   }
 
-  findAll() {
-    return `This action returns all user`;
-  }
+ async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+   const user = await this.repository.preload({
+     id: id,
+     ...updateUserDto,
+   });
+   if (!user) {
+     throw new NotFoundException(`user ${id} not found`);
+   }
+   return this.repository.save(user);
+ }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+ async remove(id: string) {
+   const user = await this.findOne(id);
+   return this.repository.remove(user);
+ }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+ async findOne(email: string): Promise<User | undefined> {
+  return this.repository.findOne({  email: email });
+}
 }
