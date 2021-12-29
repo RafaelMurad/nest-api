@@ -34,7 +34,9 @@ export class UserService{
  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
    const user = await this.repository.preload({
      id: id,
-     ...updateUserDto,
+     name: updateUserDto.name,
+     email: updateUserDto.email,
+     password: bcrypt.hashSync(updateUserDto.password, 8)
    });
    if (!user) {
      throw new NotFoundException(`user ${id} not found`);
@@ -42,12 +44,16 @@ export class UserService{
    return this.repository.save(user);
  }
 
- async remove(id: string) {
-   const user = await this.findOne(id);
-   return this.repository.remove(user);
- }
+  async remove(id: string) {
+    const user = await this.getById(id);
+    return this.repository.remove(user);
+  }
 
- async findOne(email: string): Promise<User | undefined> {
-  return this.repository.findOne({  email: email });
-}
+  async getByEmail(email: string): Promise<User | undefined> {
+    return this.repository.findOne({ email: email });
+  }
+
+  async getById(id: string): Promise<User | undefined> {
+    return this.repository.findOne({ id: id });
+  }
 }

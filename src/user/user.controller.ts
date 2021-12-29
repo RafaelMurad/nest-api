@@ -1,8 +1,8 @@
 import { Controller, Request, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
+import { AuthService } from './../auth/auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UserController {
@@ -15,7 +15,7 @@ export class UserController {
 
   @Get(':id')
   findOne(@Param('id') id: string){
-    return this.userService.findOne(id);
+    return this.userService.getById(id);
   }
 
   @Patch(':id')
@@ -26,11 +26,5 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
-  }
-
-  @UseGuards(AuthGuard('local'))
-  @Post('/login')
-  async login(@Request() req) {
-    return req.user;
   }
 }

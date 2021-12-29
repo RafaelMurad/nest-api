@@ -5,7 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-
+import { AuthService } from './auth/auth.service';
 
 @Module({
   imports: [
@@ -21,10 +21,10 @@ import { AuthModule } from './auth/auth.module';
       synchronize: (process.env.DB_SYNCHRONIZE === 'true'),
     }),
     UserModule,
-    AuthModule,
+    AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AuthService],
  })
  export class AppModule { }
  
